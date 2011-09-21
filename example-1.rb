@@ -1,16 +1,13 @@
 require 'java'
-require 'vendor/rhino'
+require 'rubygems'
+require 'mvn:rhino:js'
 
-module JS
-  include_package 'org.mozilla.javascript'
-end
+java_import org.mozilla.javascript.Context
 
-context = JS::Context.enter
-
-scope = context.initStandardObjects
+context = Context.enter
+scope = context.init_standard_objects
 
 code = %[
-  
   var javascriptInMyJavaInMyRuby = function() {
     return "Can you say polyglot programming?!";
   };
@@ -18,4 +15,4 @@ code = %[
   javascriptInMyJavaInMyRuby();
 ]
 
-puts context.evaluateString(scope, code, "example-1.js", 1, nil)
+puts context.evaluate_string scope, code, "example-1.js", 1, nil

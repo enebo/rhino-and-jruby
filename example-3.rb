@@ -1,26 +1,24 @@
 # Exposing Ruby methods
-require 'java'
-require 'vendor/rhino'
 require 'net/http'
+require 'java'
+require 'rubygems'
+require 'mvn:rhino:js'
 
-module JS
-  include_package 'org.mozilla.javascript'
+java_import org.mozilla.javascript.Context
+java_import org.mozilla.javascript.NativeFunction
+java_import org.mozilla.javascript.ScriptableObject
 
-  class HttpFunction < JS::NativeFunction
-    def call(context, scope, scriptable, args)
-      Net::HTTP.get URI.parse(args[0])
-    end
+class HttpFunction < NativeFunction
+  def call(context, scope, scriptable, args)
+    Net::HTTP.get URI.parse(args[0])
   end
 end
 
-context = JS::Context.enter
+context = Context.enter
+scope = context.init_standard_objects
 
-scope = context.initStandardObjects
+ScriptableObject.put_property scope, "http", HttpFunction.new
 
-JS::ScriptableObject.putProperty(scope, "http", JS::HttpFunction.new)
+code = %[  http("http://www.webpop.com") ]
 
-code = %[
-  http("http://www.webpop.com")
-]
-
-puts context.evaluateString(scope, code, "example-3.js", 1, nil)
+puts context.evaluate_string scope, code, "example-3.js", 1, nil
